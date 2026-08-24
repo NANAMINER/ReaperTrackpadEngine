@@ -5,12 +5,10 @@ with smoother, more predictable gestures.
 
 ## Features
 
-- Smooth horizontal scrolling in the Arrange view
-- Smooth vertical scrolling in the Arrange view and Track Control Panel
-- Simultaneous two-axis scrolling, including diagonal and circular gestures
-- Horizontal scrolling in the Mixer
-- Pinch-to-zoom anchored to REAPER's edit cursor
-- Adaptive pinch momentum: longer release for fast gestures, shorter for slow ones
+- Smooth horizontal and vertical scrolling in the Arrange view
+- Smooth vertical scrolling Track Control Panel
+- Smooth horizontal scrolling in the Mixer
+- Adaptive pinch momentum: longer release for fast gestures, shorter for slow ones (the pinch-to-zoom is anchored to REAPER's edit cursor)
 - Persistent master switch for the complete gesture engine
 
 ## Compatibility
@@ -29,21 +27,16 @@ Intel and Universal builds are not available yet.
 1. Download
    [`reaper_trackpadengine.dylib`](dist/macos-arm64/reaper_trackpadengine.dylib?raw=1).
 2. Fully quit REAPER.
-3. Copy the file to:
-
-   ```text
-   ~/Library/Application Support/REAPER/UserPlugins
-   ```
-
-4. Restart REAPER.
-5. Open the Action List and search for `Trackpad Engine`.
-6. Run **Trackpad Engine: Toggle engine (all gestures)** once.
+3. Copy the file to: ~/Library/Application Support/REAPER/UserPlugins
+5. Restart REAPER.
+6. Open the Action List and search for `Trackpad Engine`.
+7. Run **Trackpad Engine: Toggle engine (all gestures)** once.
 
 The first installation starts with the engine disabled. Its state is saved and
 restored automatically on later launches.
 
 For troubleshooting, updating, and uninstalling, see the full
-[`INSTALLATION.txt`](dist/macos-arm64/INSTALLATION.txt).
+"INSTALLATION.txt"(dist/macos-arm64/INSTALLATION.txt).
 
 ## macOS quarantine
 
