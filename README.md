@@ -5,38 +5,51 @@ with smoother, more predictable gestures.
 
 ## Features
 
-- Smooth horizontal and vertical scrolling in the Arrange view
-- Smooth vertical scrolling Track Control Panel
-- Smooth horizontal scrolling in the Mixer
-- Adaptive pinch momentum: longer release for fast gestures, shorter for slow ones (the pinch-to-zoom is anchored to REAPER's edit cursor)
+- Smooth horizontal scrolling in the Arrange view
+- Smooth vertical scrolling in the Arrange view and Track Control Panel
+- Simultaneous two-axis scrolling, including diagonal and circular gestures
+- Horizontal scrolling in the Mixer
+- Pinch-to-zoom anchored to REAPER's edit cursor
+- Adaptive pinch momentum: longer release for fast gestures, shorter for slow ones
 - Persistent master switch for the complete gesture engine
 
 ## Compatibility
 
-The downloadable build currently supports:
+Prebuilt downloads are available for:
 
 - macOS
-- Apple Silicon (`arm64`)
-- Native Apple Silicon REAPER
+- Apple Silicon (`arm64`) with native Apple Silicon REAPER
+- Intel (`x86_64`) with Intel REAPER
 - Apple trackpads and Magic Trackpad
 
-Intel and Universal builds are not available yet.
+The extension file must match the architecture used by REAPER.
 
-## Download and install
+## Download
 
-1. Download
-   [`reaper_trackpadengine.dylib`](dist/macos-arm64/reaper_trackpadengine.dylib?raw=1).
+| Mac / REAPER architecture | Extension | Checksum |
+|---|---|---|
+| Apple Silicon (`arm64`) | [Download](dist/macos-arm64/reaper_trackpadengine.dylib?raw=1) | [SHA-256](dist/macos-arm64/SHA256SUMS.txt) |
+| Intel (`x86_64`) | [Download](dist/macos-x86_64/reaper_trackpadengine.dylib?raw=1) | [SHA-256](dist/macos-x86_64/SHA256SUMS.txt) |
+
+## Install
+
+1. Download the build matching your REAPER architecture from the table above.
 2. Fully quit REAPER.
-3. Copy the file to: ~/Library/Application Support/REAPER/UserPlugins
-5. Restart REAPER.
-6. Open the Action List and search for `Trackpad Engine`.
-7. Run **Trackpad Engine: Toggle engine (all gestures)** once.
+3. Copy the file to:
+
+   ```text
+   ~/Library/Application Support/REAPER/UserPlugins
+   ```
+
+4. Restart REAPER.
+5. Open the Action List and search for `Trackpad Engine`.
+6. Run **Trackpad Engine: Toggle engine (all gestures)** once.
 
 The first installation starts with the engine disabled. Its state is saved and
 restored automatically on later launches.
 
 For troubleshooting, updating, and uninstalling, see the full
-"INSTALLATION.txt"(dist/macos-arm64/INSTALLATION.txt).
+[`INSTALLATION.txt`](dist/INSTALLATION.txt).
 
 ## macOS quarantine
 
@@ -77,7 +90,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-The extension is produced at:
+The extension is produced for the current build machine's architecture at:
 
 ```text
 build/reaper_trackpadengine.dylib
@@ -114,15 +127,14 @@ REAPER API.
 
 ## Current limitations
 
-- The prebuilt binary is Apple Silicon only.
 - Very fast Mixer swipes may still show a small visual glitch.
 - Track-height gestures are not implemented.
 - There is no settings GUI; motion parameters are currently defined in code.
 
 ## Verification
 
-The SHA-256 checksum for the downloadable binary is stored in
-[`SHA256SUMS.txt`](dist/macos-arm64/SHA256SUMS.txt).
+Each downloadable binary has a `SHA256SUMS.txt` file in the same architecture
+folder.
 
 ## License
 

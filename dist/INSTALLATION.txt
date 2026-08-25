@@ -1,0 +1,83 @@
+REAPER TRACKPAD ENGINE — INSTALLATION GUIDE
+============================================
+
+AVAILABLE BUILDS
+----------------
+
+- macos-arm64: Apple Silicon Macs and native Apple Silicon REAPER
+- macos-x86_64: Intel Macs and Intel REAPER
+
+Install only the build matching the architecture used by REAPER. Both builds
+use the required extension filename: reaper_trackpadengine.dylib
+
+INSTALLATION
+------------
+
+1. Fully quit REAPER with Command-Q. Closing only the project is not enough.
+
+2. Open the folder matching your Mac and REAPER architecture.
+
+3. Copy reaper_trackpadengine.dylib.
+
+4. In Finder, choose Go > Go to Folder and enter:
+
+   ~/Library/Application Support/REAPER/UserPlugins
+
+5. Create the UserPlugins folder if it does not exist, then paste the dylib
+   directly inside it.
+
+6. Start REAPER and open the Action List.
+
+7. Search for "Trackpad Engine" and run this action once:
+
+   Trackpad Engine: Toggle engine (all gestures)
+
+The first installation starts with all gestures disabled for safety. The
+enabled state is saved and restored automatically on later launches.
+
+WHAT IT ENABLES
+---------------
+
+- Smooth horizontal scrolling in the Arrange view
+- Smooth vertical scrolling in the Arrange view and Track Control Panel
+- Simultaneous two-axis, diagonal, and circular scrolling
+- Horizontal scrolling in the Mixer
+- Pinch-to-zoom anchored to REAPER's edit cursor with adaptive momentum
+
+TROUBLESHOOTING
+---------------
+
+If the Trackpad Engine actions do not appear:
+
+1. Confirm that REAPER was fully quit before installing the file.
+2. Confirm the exact filename: reaper_trackpadengine.dylib
+3. Confirm that the file is directly inside UserPlugins.
+4. Confirm that the dylib architecture matches REAPER.
+
+macOS may quarantine files downloaded from the internet. Only if you trust
+the download, open Terminal and run:
+
+   xattr -d com.apple.quarantine "$HOME/Library/Application Support/REAPER/UserPlugins/reaper_trackpadengine.dylib"
+
+Then fully quit and reopen REAPER.
+
+UPDATING
+--------
+
+Quit REAPER, replace the old dylib with the matching new one, and restart
+REAPER. Saved gesture settings are preserved.
+
+UNINSTALLING
+------------
+
+Quit REAPER, delete reaper_trackpadengine.dylib from UserPlugins, and restart
+REAPER.
+
+VERIFICATION
+------------
+
+Each architecture folder includes SHA256SUMS.txt. From that folder, run:
+
+   shasum -a 256 reaper_trackpadengine.dylib
+
+The result must match the value in SHA256SUMS.txt.

@@ -1,0 +1,23 @@
+REAPER TRACKPAD ENGINE — INTEL INSTALLATION
+============================================
+
+This folder contains the Intel x86_64 build. Use it only with an Intel Mac and
+the Intel version of REAPER.
+
+1. Fully quit REAPER.
+2. Copy reaper_trackpadengine.dylib to:
+
+   ~/Library/Application Support/REAPER/UserPlugins
+
+3. Restart REAPER.
+4. Open the Action List and search for "Trackpad Engine".
+5. Run "Trackpad Engine: Toggle engine (all gestures)" once.
+
+If the actions do not appear, confirm that the binary architecture matches
+REAPER. If macOS quarantined the file, and only if you trust the download, run:
+
+   xattr -d com.apple.quarantine "$HOME/Library/Application Support/REAPER/UserPlugins/reaper_trackpadengine.dylib"
+
+Then fully quit and reopen REAPER.
+
+The SHA-256 checksum is stored in SHA256SUMS.txt.
