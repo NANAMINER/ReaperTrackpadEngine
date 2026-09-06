@@ -1,144 +1,73 @@
-# REAPER Trackpad Engine
+# REAPER Trackpad Engine — MIDI smooth scrolling build
 
-Experimental macOS extension that replaces REAPER's native trackpad navigation
-with smoother, more predictable gestures.
+Native macOS extension that makes a MacBook trackpad substantially more natural in REAPER’s Arrange view and MIDI editor.
 
-## Features
+This repository is a downstream fork of [duanebeatzz/ReaperTrackpadEngine](https://github.com/duanebeatzz/ReaperTrackpadEngine). It preserves the upstream source history and publishes the tested Apple Silicon release builds made for this fork.
 
-- Smooth horizontal scrolling in the Arrange view
-- Smooth vertical scrolling in the Arrange view and Track Control Panel
-- Simultaneous two-axis scrolling, including diagonal and circular gestures
-- Horizontal scrolling in the Mixer
-- Pinch-to-zoom anchored to REAPER's edit cursor
-- Adaptive pinch momentum: longer release for fast gestures, shorter for slow ones
-- Persistent master switch for the complete gesture engine
+## What v3.6 MIDI changes
 
-## Compatibility
+- Two-finger scrolling pans the Arrange view as in the established Trackpad Engine build.
+- Inside the piano roll, two-finger horizontal and vertical scrolling are handled as precise viewport motion.
+- Pinch-to-zoom in the MIDI editor is anchored at the mouse cursor instead of REAPER’s edit/play cursor.
+- MIDI pinch sensitivity is reduced relative to the preceding experimental build.
+- The extension restores REAPER’s previous horizontal-zoom preference when it unloads.
 
-Prebuilt downloads are available for:
+REAPER’s MIDI editor still scrolls vertically in native note-row steps. That is a REAPER viewport limitation; this build does not add a fake visual interpolation layer.
 
-- macOS
-- Apple Silicon (`arm64`) with native Apple Silicon REAPER
-- Intel (`x86_64`) with Intel REAPER
-- Apple trackpads and Magic Trackpad
+## Requirements
 
-The extension file must match the architecture used by REAPER.
+- macOS on Apple Silicon (M1/M2/M3/M4 and later)
+- REAPER for macOS
+- [ReaPack](https://reapack.com/) and the `js_ReaScriptAPI` extension, installed through ReaPack
 
-## Download
-
-| Mac / REAPER architecture | Extension | Checksum |
-|---|---|---|
-| Apple Silicon (`arm64`) | [Download](dist/macos-arm64/reaper_trackpadengine.dylib?raw=1) | [SHA-256](dist/macos-arm64/SHA256SUMS.txt) |
-| Intel (`x86_64`) | [Download](dist/macos-x86_64/reaper_trackpadengine.dylib?raw=1) | [SHA-256](dist/macos-x86_64/SHA256SUMS.txt) |
+`js_ReaScriptAPI` is required for the smooth MIDI viewport scrolling. If it is absent, the extension intentionally leaves MIDI input to stock REAPER rather than interfering with it.
 
 ## Install
 
-1. Download the build matching your REAPER architecture from the table above.
-2. Fully quit REAPER.
-3. Copy the file to:
+1. In the [latest release](../../releases/latest), download `reaper-trackpadengine-v3.6-midi-arm64.zip`.
+2. Quit REAPER completely (`⌘Q`), not merely close its window.
+3. Unzip the download and copy `reaper_trackpadengine.dylib` to:
 
-   ```text
-   ~/Library/Application Support/REAPER/UserPlugins
+   ```
+   ~/Library/Application Support/REAPER/UserPlugins/
    ```
 
-4. Restart REAPER.
-5. Open the Action List and search for `Trackpad Engine`.
-6. Run **Trackpad Engine: Toggle engine (all gestures)** once.
+4. If Finder asks, replace the older file of the same name.
+5. Start REAPER again.
 
-The first installation starts with the engine disabled. Its state is saved and
-restored automatically on later launches.
+## Install js_ReaScriptAPI
 
-For troubleshooting, updating, and uninstalling, see the full
-[`INSTALLATION.txt`](dist/INSTALLATION.txt).
+1. Install ReaPack if it is not already present, then restart REAPER.
+2. Choose `Extensions → ReaPack → Browse packages`.
+3. Search for `js_ReaScriptAPI`, install it, then restart REAPER once more.
 
-## macOS quarantine
+## Update / remove
 
-If REAPER does not show the Trackpad Engine actions, macOS may have quarantined
-the downloaded file. Only if you trust the download, run:
+- **Update:** quit REAPER, replace the same `.dylib`, start REAPER again.
+- **Remove:** quit REAPER and delete `reaper_trackpadengine.dylib` from the `UserPlugins` folder. REAPER will return to its normal trackpad behaviour.
 
-```bash
-xattr -d com.apple.quarantine \
-  "$HOME/Library/Application Support/REAPER/UserPlugins/reaper_trackpadengine.dylib"
-```
+## Verify the download
 
-Then fully quit and reopen REAPER.
-
-## Usage
-
-The master action controls horizontal scrolling, vertical scrolling, and pinch
-zoom together:
-
-```text
-Trackpad Engine: Toggle engine (all gestures)
-```
-
-Separate actions remain available for selectively enabling or disabling each
-gesture. Diagnostic logging and calibration actions are optional and are not
-needed for normal use.
-
-## Build from source
-
-Requirements:
-
-- Xcode Command Line Tools
-- CMake 3.20 or newer
+The release includes `SHA256SUMS.txt`. In Terminal, from the unzipped release folder:
 
 ```bash
-git clone https://github.com/duanebeatzz/ReaperTrackpadEngine.git
-cd ReaperTrackpadEngine
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build
+shasum -a 256 reaper_trackpadengine.dylib
 ```
 
-The extension is produced for the current build machine's architecture at:
+For v3.6 MIDI the expected hash is:
 
-```text
-build/reaper_trackpadengine.dylib
+```
+cee7dab6c28c76646e54c5a228afe7d04270d7ab328aa0d8120c9b193f74b65c
 ```
 
-To install the compiled file:
+## Compatibility and scope
 
-```bash
-./scripts/install.sh
-```
+This first downstream release is specifically built for `arm64` macOS. It is not an Intel build and has not been tested on Windows or Linux. It uses REAPER internals and js_ReaScriptAPI, so test it on a copy of an important project before relying on it in a critical session.
 
-REAPER must be fully restarted after installation or updating.
+The project is not affiliated with Cockos.
 
-## Architecture
+## Credits
 
-```text
-NSEvent / REAPER view
-        ↓
-TrackpadEvent
-        ↓
-MotionEngine and gesture processors
-        ↓
-NavigationCommand
-        ↓
-ReaperNavigation
-        ↓
-REAPER API
-```
+Upstream project: [duanebeatzz/ReaperTrackpadEngine](https://github.com/duanebeatzz/ReaperTrackpadEngine).
 
-The Objective-C++ layer captures trackpad events and converts them into plain
-C++ data. Gesture processors handle motion and momentum, while
-`ReaperNavigation` is the only component that applies changes through the
-REAPER API.
-
-## Current limitations
-
-- Very fast Mixer swipes may still show a small visual glitch.
-- Track-height gestures are not implemented.
-- There is no settings GUI; motion parameters are currently defined in code.
-
-## Verification
-
-Each downloadable binary has a `SHA256SUMS.txt` file in the same architecture
-folder.
-
-## License
-
-ReaperTrackpadEngine is released under the [MIT License](LICENSE).
-
-Vendored REAPER SDK and WDL/SWELL headers retain their original license
-notices. See [`third_party/NOTICE.md`](third_party/NOTICE.md).
+This fork’s MIDI scrolling and cursor-anchored pinch work were developed as a downstream modification. See [CHANGELOG.md](CHANGELOG.md) for the release-specific behaviour.
