@@ -1,3 +1,4 @@
+# Triggered by the v3.6 release package commit.
 name: Publish v3.6 MIDI release
 
 on:
