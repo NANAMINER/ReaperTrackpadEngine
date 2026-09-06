@@ -1,0 +1,111 @@
+name: Build REAPER Trackpad Engine v3.6 MIDI
+
+on:
+  push:
+    branches:
+      - tmp/reaper-trackpad-smooth-scroll
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch pinned upstream
+        run: |
+          git clone --recurse-submodules https://github.com/duanebeatzz/ReaperTrackpadEngine.git source
+          cd source
+          git checkout 295cd80938451d983736cccfd8504872aa3d0726
+          git submodule update --init --recursive
+
+      - name: Apply confirmed v3.2 Arrange base
+        run: |
+          python3 reaper_trackpad_safe_v3_patch.py
+          python3 reaper_trackpad_v31_arrange_view_fix.py
+          python3 reaper_trackpad_v32_js_vertical_fix.py
+
+      - name: Integrate MIDI editor gestures
+        run: |
+          python3 reaper_trackpad_v33_midi_integrated.py
+          python3 reaper_trackpad_v34_midi_smooth.py
+          python3 reaper_trackpad_v35_midi_stability.py
+          python3 reaper_trackpad_v36_native_mouse_anchor.py
+
+          echo '--- v3.6 one-path MIDI pinch ---'
+          grep -n -C 16 'EnsureMidiMouseZoomCenter' source/src/ReaperNavigation.cpp
+          grep -n -C 24 'kZoomQuantum = 0.060' source/src/ReaperNavigation.cpp
+          grep -n -C 10 'RestoreHostPreferences' source/src/ReaperNavigation.cpp source/src/ReaperNavigation.h source/src/PluginEntry.cpp
+          grep -n -C 7 'intentionally empty' source/src/ReaperNavigation.cpp
+
+          # v3.6 invariants: MIDI pinch uses one REAPER zoom operation whose
+          # native zoom center is the mouse. There must be no deferred anchor
+          # correction fighting the host afterward.
+          grep -q 'g_reaperGetFunc("get_config_var")' source/src/ReaperNavigation.cpp
+          grep -q 'g_getConfigVar("zoommode"' source/src/ReaperNavigation.cpp
+          grep -q '\*g_zoomModeConfig = 3' source/src/ReaperNavigation.cpp
+          grep -q 'kZoomQuantum = 0.060' source/src/ReaperNavigation.cpp
+          grep -q 'ReaperNavigation::RestoreHostPreferences();' source/src/PluginEntry.cpp
+          grep -q 'v3.6: intentionally empty' source/src/ReaperNavigation.cpp
+          if grep -A90 'bool ApplyMidiHorizontalPinch' source/src/ReaperNavigation.cpp | grep 'ApplyPendingMidiAnchor\|g_jsSetScrollPos'; then
+            echo 'ERROR: v3.5 post-zoom anchor correction leaked into v3.6 pinch' >&2
+            exit 1
+          fi
+          if grep -n 'GetTrackWnd\|CF_GetScrollInfo\|CF_SetTcpScroll' source/src/ReaperNavigation.cpp; then
+            echo 'ERROR: broken internal SWS API reintroduced' >&2
+            exit 1
+          fi
+          if grep -R 'reaper_miditrackpad' source; then
+            echo 'ERROR: separate MIDI companion leaked into integrated build' >&2
+            exit 1
+          fi
+
+      - name: Build arm64 dylib
+        run: |
+          cmake -S source -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+          cmake --build build --config Release -j 4
+          codesign --force --sign - build/reaper_trackpadengine.dylib
+          file build/reaper_trackpadengine.dylib
+          lipo -info build/reaper_trackpadengine.dylib
+          otool -L build/reaper_trackpadengine.dylib
+          nm -gU build/reaper_trackpadengine.dylib | grep ReaperPluginEntry
+          codesign --verify --verbose=2 build/reaper_trackpadengine.dylib
+          shasum -a 256 build/reaper_trackpadengine.dylib | tee build/SHA256SUMS.txt
+
+      - name: Package
+        run: |
+          cat > build/README.txt <<'EOF'
+          REAPER Trackpad Engine v3.6 MIDI — Apple Silicon
+
+          Key change:
+          - MIDI pinch no longer zooms with REAPER's edit/play-cursor anchor and
+            then tries to repair the viewport afterward.
+          - It temporarily forces REAPER's own horizontal zoom center
+            (zoommode) to Mouse cursor and dispatches exactly one MIDI zoom path.
+          - All v3.5 deferred horizontal anchor correction is disabled.
+          - Previous zoommode is restored when the extension unloads.
+          - Pinch sensitivity is reduced again (quantum 0.060 vs 0.035).
+
+          Vertical MIDI pan remains limited by REAPER's own discrete MIDI
+          viewport: CFGEDITVIEW stores vertical position and vertical zoom as
+          integers, which is why even dragging REAPER's own scrollbar moves the
+          piano roll in note-row steps. This build does not fake compositor
+          interpolation over that native limitation.
+
+          Arrange v3.2 behavior is unchanged.
+          Requires js_ReaScriptAPI (ReaPack).
+          Replace only reaper_trackpadengine.dylib and fully restart REAPER.
+          EOF
+
+      - name: Upload dylib
+        uses: actions/upload-artifact@v4
+        with:
+          name: reaper-trackpadengine-v36-midi-arm64
+          path: |
+            build/reaper_trackpadengine.dylib
+            build/SHA256SUMS.txt
+            build/README.txt
+          if-no-files-found: error
