@@ -66,6 +66,10 @@ This first downstream release is specifically built for `arm64` macOS. It is not
 
 The project is not affiliated with Cockos.
 
+## Source and reproducibility
+
+The source tree preserves the upstream project. The exact downstream changes used for this release are kept as an ordered, reviewable patch series in [patches/](patches/README.md). The published binary was built after applying that series; a plain upstream-source build does not by itself reproduce v3.6 MIDI.
+
 ## Credits
 
 Upstream project: [duanebeatzz/ReaperTrackpadEngine](https://github.com/duanebeatzz/ReaperTrackpadEngine).
